@@ -1,9 +1,9 @@
 import { Schema, Types, model } from "mongoose";
 
 interface IUser {
-  email?: string;
+  email: string;
   custodialAddress: string;
-  smartAccountAddress: string;
+  smartAccountAddress?: string;
   userOperations: Types.ObjectId[];
   subscriptions: Types.ObjectId[];
   feeBalance: number;
@@ -13,6 +13,8 @@ const UserSchema = new Schema<IUser>(
   {
     email: {
       type: String,
+      unique: true,
+      required: true,
     },
     custodialAddress: {
       type: String,
@@ -21,7 +23,6 @@ const UserSchema = new Schema<IUser>(
     },
     smartAccountAddress: {
       type: String,
-      required: true,
       unique: true,
     },
     subscriptions: [

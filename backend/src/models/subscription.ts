@@ -3,7 +3,7 @@ import { Schema, Types, model } from "mongoose";
 export interface ISubscription {
   user: Types.ObjectId;
   paymentId?: string;
-  paymentIntentId?: string;
+  paymentIntentId: string;
   amount: string;
   currency: "USD" | "ETH" | "BTC";
   ethAmount?: number; //settlementAmount is always ETH
@@ -25,6 +25,7 @@ const SubscriptionSchema = new Schema<ISubscription>(
     },
     paymentIntentId: {
       type: String,
+      required: true,
     },
     amount: {
       type: String,

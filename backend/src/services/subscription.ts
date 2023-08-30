@@ -19,6 +19,10 @@ class Subscription {
     return this.model.find({}).skip(offset).limit(limit);
   }
 
+  getByUser(id: string) {
+    return this.model.find({ user: id });
+  }
+
   getCount() {
     return this.model.count({});
   }
@@ -27,8 +31,19 @@ class Subscription {
     return this.model.count({ user: userId });
   }
 
-  getById(id: string) {
-    return this.model.findById(id);
+  async getById(id: string) {
+    const subscription = await this.model.findById(id).lean();
+    if (!subscription) {
+      throw Error("Subscription not found");
+    }
+    var paymentIntent;
+    const circlePayment = new CircleCryptoPayment(CircleAPI);
+    if (subscription.paymentIntentId) {
+      paymentIntent = await circlePayment.getPaymentIntentById(
+        subscription.paymentIntentId
+      );
+    }
+    return { ...subscription, paymentIntent };
   }
 
   getByPaymentIntent(paymentIntentId: string) {
