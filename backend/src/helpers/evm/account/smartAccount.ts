@@ -63,7 +63,6 @@ export class SmartAccount {
   async getAddress() {
     if (!this.accountAddr) {
       const initCode = this.getAccountInitCode();
-      console.log(`Initcode is ${initCode}`);
       try {
         await this.entrypoint.callStatic(
           this.nodeProvider,
@@ -73,7 +72,6 @@ export class SmartAccount {
       } catch (err: any) {
         if (err.errorName == "SenderAddressResult") {
           this.accountAddr = err.errorArgs[0];
-          console.log(err.errorArgs[0]);
           return this.accountAddr as string;
         }
       }
@@ -132,11 +130,7 @@ export class SmartAccount {
 
   getAccountInitCode(): string {
     //slight difference in ABI for mumbai chain(uses bytes for salt and not uint)
-    const smartAccountFactoryInterface = new Interface(
-      this.chain == "mumbai"
-        ? simpleAccountFactoryMumbaiABI
-        : simpleAccountFactoryABI
-    );
+    const smartAccountFactoryInterface = new Interface(simpleAccountFactoryABI);
     return hexConcat([
       this.factoryAddress,
       smartAccountFactoryInterface.encodeFunctionData("createAccount", [

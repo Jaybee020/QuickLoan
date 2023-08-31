@@ -22,7 +22,13 @@ export const CircleAPI = axios.create({
   headers: { Authorization: `Bearer ${CIRCLE_API_KEY}` },
 });
 
+export const defillamaAPI = axios.create({
+  baseURL: "https://coins.llama.fi/",
+  headers: { accept: "application/json" },
+});
+
 export const GLOBAL_NETWORK = "mumbai";
+export const WMATICTOKENADDR = "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270";
 
 export const chainToWETH = {
   eth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
@@ -50,7 +56,7 @@ export const chainTochainId = {
 };
 
 const networkToSmartAccountFactory = {
-  mumbai: "0x6805351475AE74eDF20c6aB8f451B40642918531",
+  mumbai: "0x9406Cc6185a346906296840746125a0E44976454",
   polygon: "0x9406Cc6185a346906296840746125a0E44976454",
 };
 export const defaultEntrypointAddr =

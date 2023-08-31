@@ -173,32 +173,23 @@ export class SmartAccountProvider {
       sender,
       nonce: hexValue(nonce.toHexString()),
       callData: callData,
-      paymaster: this.rpcProvider.getDummyPayMaster(),
     };
 
-    console.log(baseUserOperation);
-    baseUserOperation = await this.rpcProvider.feeData(baseUserOperation);
-    console.log(baseUserOperation);
-
-    const gas = await this.rpcProvider.estimateUserOperationGas(
+    const paymasterAndGasData = await this.rpcProvider.getGasAndPaymasterData(
+      this.policyId,
+      this.entryPointAddress,
+      this.account.getDummySignature(),
       baseUserOperation
     );
-    console.log(gas);
-    // const paymasterAndGasData = await this.rpcProvider.getGasAndPaymasterData(
-    //   this.policyId,
-    //   this.entryPointAddress,
-    //   this.account.getDummySignature(),
-    //   baseUserOperation
-    // );
-    // console.log(paymasterAndGasData);
-    // if (paymasterAndGasData.error) {
-    //   throw new Error(paymasterAndGasData.error.message);
-    // }
-    // return {
-    //   ...baseUserOperation,
-    //   ...paymasterAndGasData,
-    //   signature: this.account.getDummySignature(),
-    // };
+    console.log(paymasterAndGasData);
+    if (paymasterAndGasData.error) {
+      throw new Error(paymasterAndGasData.error.message);
+    }
+    return {
+      ...baseUserOperation,
+      ...paymasterAndGasData,
+      signature: this.account.getDummySignature(),
+    };
   }
 
   async buildUserOperationWithHash(
@@ -234,12 +225,28 @@ export class SmartAccountProvider {
     const res =
       await this.rpcProvider.callFunctionSpecficToCertainProvider<any>(
         "ALCHEMY",
-        "alchemy_simulateAssetChanges",
+        "alchemy_simulateExecution",
         [
           {
             from: beneficiary,
             to: this.entryPointAddress,
-            data,
+            data: request.callData,
+          },
+        ]
+      );
+    return res;
+  }
+
+  async simulateSmartAccountTxn(request: UserOperationRequest) {
+    const res =
+      await this.rpcProvider.callFunctionSpecficToCertainProvider<any>(
+        "ALCHEMY",
+        "alchemy_simulateAssetChanges",
+        [
+          {
+            from: this.entryPointAddress,
+            to: request.sender,
+            data: request.callData,
           },
         ]
       );

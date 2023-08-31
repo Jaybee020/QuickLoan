@@ -7,7 +7,13 @@ interface IUserOperation {
   user: Types.ObjectId;
   fee: number; // in eth
   opRequest: UserOperationRequest;
-  status: "CREATED" | "SIGNED" | "SIMULATED" | "CONFIRMED" | "FAILED";
+  status:
+    | "CREATED"
+    | "SIGNED"
+    | "SIMULATED"
+    | "BROADCASTED"
+    | "CONFIRMED"
+    | "FAILED";
   createdAt: string;
   updatedAt: string;
 }

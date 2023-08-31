@@ -23,7 +23,6 @@ class User {
       user.smartAccountAddress
     );
     const smartAccountAddr = await smartAccount.getAddress();
-    console.log(smartAccountAddr);
     return smartAccountAddr;
   }
 

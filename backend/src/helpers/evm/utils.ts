@@ -1,5 +1,6 @@
 import { AbiCoder, keccak256 } from "ethers/lib/utils";
 import { UserOperationRequest } from "../../interfaces";
+import { defillamaAPI } from "../../config";
 
 export function sleep(seconds: number) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -59,4 +60,36 @@ export function getUserOperationHash(
   //   ) as `0x${string}`;
 
   return keccak256(encoded);
+}
+
+export async function getTokenPriceFromDefillama(
+  tokens: string[],
+  chain: string
+) {
+  const exchangeDict: Record<string, string> = {
+    bsc: "bsc",
+    eth: "ethereum",
+    polygon: "polygon",
+    avalanche: "avax",
+    arbitrum: "arbitrum",
+    fantom: "fantom",
+    optimism: "optimism",
+    cronos: "cronos",
+  };
+
+  const coins =
+    `${exchangeDict[chain]}:` + tokens.join(`,${exchangeDict[chain]}:`);
+
+  const data = (
+    await defillamaAPI.get<{
+      coins: { [key: string]: { decimals: number; price: number } };
+    }>(`prices/current/${coins}`)
+  ).data.coins;
+
+  const priceInfo = Object.entries(data).map(([addr, info]) => {
+    return {
+      [`${chain}0x` + addr.split("0x")[1].toLowerCase()]: info.price,
+    };
+  });
+  return priceInfo;
 }

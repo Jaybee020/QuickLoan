@@ -5,6 +5,7 @@ import {
   SupportedChains,
   SupportedCurrencies,
 } from "../helpers/circle/crypto/interface";
+import crypto from "crypto";
 import { ISubscription, SubscriptionModel } from "../models/subscription";
 import User from "./user";
 
@@ -88,10 +89,10 @@ class Subscription {
     const payload: CreatePaymentIntentPayload = {
       idempotencyKey: crypto.randomUUID(),
       amount: {
-        amount: String(subscriptionPayload.amount),
+        amount: String(Number(subscriptionPayload.amount).toFixed(2)),
         currency: subscriptionPayload.currency,
       },
-      settlementCurrency: "ETH",
+      settlementCurrency: "USD",
       paymentMethods: [
         {
           chain: subscriptionPayload.chain,
@@ -99,7 +100,9 @@ class Subscription {
         },
       ],
     };
-    const paymentIntent = await circlePayment.createPaymenIntent(payload);
+    const paymentIntent =
+      //@ts-ignore
+      (await circlePayment.createPaymenIntent(payload)).data;
     const subscriptionDoc = await this.model.create({
       ...subscriptionPayload,
       method: "CRYPTO",

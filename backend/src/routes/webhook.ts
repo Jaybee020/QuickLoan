@@ -11,6 +11,7 @@ const router = Router();
 
 var paymentQueue: Queue.Queue;
 if (MODE == "PRODUCTION") {
+  console.log(MODE, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_PASSWORD);
   paymentQueue = new Queue("payment", {
     redis: {
       port: REDIS_PORT,
@@ -29,6 +30,11 @@ async function handleCryptoSubscription(paymentData: CryptoPayment) {
   if (!subscription) {
     return;
   }
+  console.log(
+    "Started processing payment of data",
+    paymentData.paymentIntentId
+  );
+  console.log(paymentData);
   if (paymentData.status == "paid") {
     if (subscription.status != "PENDING") {
       return; // only update pending subscirptions
@@ -44,7 +50,9 @@ async function handleCryptoSubscription(paymentData: CryptoPayment) {
     if (!user) {
       return;
     }
-    user.feeBalance += 0.97 * Number(paymentData.settlementAmount.amount);
+    user.feeBalance += Number(
+      (0.97 * Number(paymentData.settlementAmount.amount)).toFixed(2)
+    );
     if (user.email) {
       emailQueue.add({
         email: user.email,
@@ -73,7 +81,6 @@ paymentQueue.process(async function (job: {
   data: CryptoPayment; // CardPayment; add support for card
 }) {
   const paymentData = job.data;
-  console.log("Started processing payment of data", job.data.id);
 
   //payments are usually for donations
 
@@ -92,7 +99,7 @@ paymentQueue.process(async function (job: {
   }
 });
 
-router.head("/notification/v1", async (req: Request, res: Response) => {
+router.head("/notification", async (req: Request, res: Response) => {
   res.writeHead(200, {
     "Content-Type": "text/html",
   });
@@ -101,7 +108,7 @@ router.head("/notification/v1", async (req: Request, res: Response) => {
   return;
 });
 
-router.post("/notification/v1", async (req: Request, res: Response) => {
+router.post("/notification", async (req: Request, res: Response) => {
   let body = "";
   req.on("data", (data) => {
     body += data;
@@ -119,6 +126,7 @@ router.post("/notification/v1", async (req: Request, res: Response) => {
         console.log("Could not subscribe");
       }
     } else if (envelope.Type == "Notification") {
+      console.log("Notification received");
       const data: {
         notificationType: notificationType;
         payment: CryptoPayment;
@@ -126,7 +134,24 @@ router.post("/notification/v1", async (req: Request, res: Response) => {
       } = JSON.parse(envelope.Message);
       const { notificationType, ...payload } = data;
       if (notificationType == "payments") {
-        paymentQueue.add(payload.payment);
+        console.log(notificationType);
+
+        const paymentData = payload.payment;
+        if (paymentData.type == "payment") {
+          if (paymentData.source) {
+            //   await handleCardPayments(paymentData as CardPayment);
+          } else {
+            await handleCryptoSubscription(paymentData as CryptoPayment);
+          }
+          //   } else if (paymentData.type == "refund") {
+          //     if (paymentData.source) {
+          //       await handleCardRefund(paymentData as CardPayment);
+          //     } else {
+          //       await handleCryptoRefund(paymentData as CryptoPayment);
+          //     }
+        }
+
+        // paymentQueue.add(payload.payment);
       }
       //handle payout
       //   else if (notificationType == "payouts") {

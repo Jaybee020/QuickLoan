@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import User from "../services/user";
 const router = Router();
+
 router.get("/:email", async function (req: Request, res: Response) {
   try {
     const email = req.params.email;
@@ -22,7 +23,7 @@ router.post("", async function (req: Request, res: Response) {
 });
 
 router.get(
-  "/:email/subscriptions",
+  "/subscriptions/:email",
   async function (req: Request, res: Response) {
     try {
       const email = req.params.email;
@@ -34,27 +35,15 @@ router.get(
   }
 );
 
-router.put("/:email", async function (req: Request, res: Response) {
-  try {
-    const { smartWallet } = req.body;
-    const user = await User.getByEmail(smartWallet);
-    res.status(200).json({ data: user });
-  } catch (error) {
-    res.status(400).json({ error });
-  }
-});
-
-router.get("/:email/smartWallet", async function (req: Request, res: Response) {
+router.get("/smartWallet/:email", async function (req: Request, res: Response) {
   try {
     const email = req.params.email;
-    const wallet = await User.getSmartAccountWallet(email);
+    const user = await User.getByEmail(email);
+    const wallet = await User.getSmartAccountWallet(user?.id);
     res.status(200).json({ data: wallet });
   } catch (error) {
     res.status(400).json({ error });
   }
 });
 
-router.post("/subscribe", async function (req: Request, res: Response) {
-  const { email } = req.body;
-  const user = await User.getByEmail(email);
-});
+export const user = router;

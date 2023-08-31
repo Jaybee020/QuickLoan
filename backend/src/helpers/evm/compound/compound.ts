@@ -156,25 +156,9 @@ export class Compound {
       tokenToDecimal[loanAsset.toUpperCase()]
     );
 
-    //approval Transaction
-    const approvedAmount = (await this.getERC20Approval(
-      loanAssetTokenAddr,
-      ownerAddr,
-      this.cometAddress
-    )) as BigNumber;
-
-    if (approvedAmount.lt(amountIn)) {
-      const approveTx = await this.generateERC20ApproveTxn(
-        loanAssetTokenAddr,
-        this.cometAddress,
-        amountIn
-      );
-      txns.push(approveTx);
-    }
-
     const loanTxn = await this.cometContract.populateTransaction(
       this.nodeProvider,
-      "supply",
+      "withdraw",
       [loanAssetTokenAddr, amountIn]
     );
     txns.push(loanTxn);
