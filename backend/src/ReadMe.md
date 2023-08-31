@@ -59,6 +59,31 @@ Create a new user operation.
 
   ```
 
+```js
+    {
+    type: "WITHDRAW" | "SUPPLY" | "CLAIM";
+    asset: string;
+    amount: string;
+    address: string;
+    } // Compound Actions structure
+
+    {
+    tokenAddress: string;
+    from?: string;
+    value?: string;
+    } //Token transfer Struct
+
+      {
+    to?: string;
+    from?: string;
+    value?: string;
+} // Native asset transfer struct
+```
+
+for COMPOUND action type is {
+
+}
+
 USER
 
 # User API Documentation
