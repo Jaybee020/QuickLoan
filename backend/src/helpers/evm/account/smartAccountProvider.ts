@@ -227,7 +227,7 @@ export class SmartAccountProvider {
       "handleOps",
       [[request], beneficiary]
     );
-
+    console.log(fee?.toString());
     const res =
       await this.rpcProvider.callFunctionSpecficToCertainProvider<any>(
         "ALCHEMY",
@@ -260,5 +260,10 @@ export class SmartAccountProvider {
 
   async sendUserOperation(request: UserOperationRequest) {
     return this.rpcProvider.sendUserOperation(request, this.entryPointAddress);
+  }
+
+  async getTokenBalance() {
+    const addr = await this.getAddress();
+    return this.rpcProvider.getTokenBalanceOfAddr(addr);
   }
 }

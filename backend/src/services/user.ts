@@ -22,8 +22,12 @@ class User {
       user.custodialAddress,
       user.smartAccountAddress
     );
-    const smartAccountAddr = await smartAccount.getAddress();
-    return smartAccountAddr;
+    const smartAccountProvider = new SmartAccountProvider(smartAccount);
+    const balance = await smartAccountProvider.getTokenBalance();
+    return {
+      balance,
+      addr: await smartAccount.getAddress(),
+    };
   }
 
   getByEmail(email: string) {
@@ -44,6 +48,8 @@ class User {
       email,
     });
   }
+
+  getBalance() {}
 }
 
 export default new User();

@@ -1,4 +1,4 @@
-import { hexValue } from "ethers/lib/utils";
+import { formatUnits, hexValue } from "ethers/lib/utils";
 import { ALCHEMY_API_KEY, defaultEntrypointAddr } from "../../../config";
 import {
   EVMSupportedChains,
@@ -9,6 +9,15 @@ import {
   UserOperationStruct,
 } from "../../../interfaces";
 import { EVMNodeInquirer } from "./baseProvider";
+import { BigNumber } from "ethers";
+
+export interface TokenMetadata {
+  token_address: string;
+  decimals: number;
+  name: string;
+  symbol: string;
+  logo?: string;
+}
 
 export class ERC4337Provider extends EVMNodeInquirer {
   private txMaxRetries: number;
@@ -134,6 +143,58 @@ export class ERC4337Provider extends EVMNodeInquirer {
     }
     throw new Error("Failed to find transaction for User Operation");
   };
+
+  async getTokenBalanceOfAddr(ownerAddr: string) {
+    var data = await this.callFunctionSpecficToCertainProvider<{
+      pageKey: string | undefined;
+      tokenBalances: { contractAddress: string; tokenBalance: string }[];
+    }>("ALCHEMY", "alchemy_getTokenBalances", [ownerAddr, "erc20"]);
+    if (!data) {
+      return [];
+    }
+    let tokens = [];
+    tokens.push(
+      ...data.tokenBalances
+        .filter(
+          (tokenBalanceInfo) =>
+            tokenBalanceInfo.tokenBalance != "0x" &&
+            tokenBalanceInfo.tokenBalance != "0x0"
+        ) //token Balance returns 0x if self destruct has been called on contract
+        .map((tokenBalanceInfo: any) => {
+          return {
+            token_address: tokenBalanceInfo.contractAddress as string,
+            balance: BigNumber.from(tokenBalanceInfo.tokenBalance),
+            token_id: BigNumber.from(0),
+          };
+        })
+    );
+
+    var tokenWithMetadata = await Promise.all(
+      tokens.map(async (token) => {
+        const metadata = await this.getTokenMetadata(token.token_address);
+        return {
+          ...metadata,
+          ...token,
+          balance: formatUnits(token.balance, metadata.decimals),
+        };
+      })
+    );
+
+    return tokenWithMetadata;
+  }
+
+  async getTokenMetadata(tokenAddr: string) {
+    const data = await this.callFunctionSpecficToCertainProvider<TokenMetadata>(
+      "ALCHEMY",
+      "alchemy_getTokenMetadata",
+      [tokenAddr]
+    );
+    return {
+      ...data,
+      token_address: tokenAddr,
+      logo: data?.logo,
+    };
+  }
 
   async feeData(struct: any) {
     const feeData = await this.providerMapping.ALCHEMY!.getFeeData();
