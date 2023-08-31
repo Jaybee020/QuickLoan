@@ -215,12 +215,18 @@ export class SmartAccountProvider {
   }
 
   async simulateUserOperation(request: UserOperationRequest) {
-    const beneficiary = "0x9831d6f598729bF41055A0AF96396CEa91Eab18B";
+    const beneficiary = "0xd53eb5203e367bbdd4f72338938224881fc501ab";
     // this.entryPointAddress
     const data = this.account?.entrypoint.encodeFunctionData("handleOps", [
       [request],
       beneficiary,
     ]);
+
+    const fee = await this.account?.entrypoint.estimateFunctionGas(
+      this.rpcProvider,
+      "handleOps",
+      [[request], beneficiary]
+    );
 
     const res =
       await this.rpcProvider.callFunctionSpecficToCertainProvider<any>(
@@ -230,7 +236,7 @@ export class SmartAccountProvider {
           {
             from: beneficiary,
             to: this.entryPointAddress,
-            data: request.callData,
+            data: data,
           },
         ]
       );
@@ -244,8 +250,7 @@ export class SmartAccountProvider {
         "alchemy_simulateAssetChanges",
         [
           {
-            from: this.entryPointAddress,
-            to: request.sender,
+            to: this.entryPointAddress,
             data: request.callData,
           },
         ]

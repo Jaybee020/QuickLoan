@@ -171,10 +171,10 @@ class UserOperation {
     if (!userOp) {
       throw Error("No userOp of id found");
     }
-    assert(
-      userOp.status == "SIGNED",
-      "User operation status should be created or simulated"
-    );
+    // assert(
+    //   userOp.status == "SIGNED",
+    //   "User operation status should be created or simulated"
+    // );
     const smartAccountProvider = new SmartAccountProvider();
     const simulate = await smartAccountProvider.simulateUserOperation(
       userOp.opRequest
@@ -222,6 +222,7 @@ class UserOperation {
     userOp.opRequest = validUserOp;
     userOp.status = "SIGNED";
     await userOp.save();
+    return userOp;
   }
 
   async broadcastUserOperation(userOpId: string) {
@@ -233,8 +234,8 @@ class UserOperation {
     const smartAccountProvider = new SmartAccountProvider();
     const userOpRequest = userOp.opRequest;
     assert(
-      userOp.status == "SIGNED",
-      "User operation status should be singed or "
+      userOp.status == "SIGNED" || userOp.status == "SIMULATED",
+      "User operation status should be gined"
     );
     const hash = await smartAccountProvider.sendUserOperation(userOpRequest);
     userOp.opHash = hash;

@@ -22,10 +22,11 @@ async function main() {
   const PRIVATE_KEY = String(process.env.PRIVATE_KEY);
   const wallet = new Wallet(PRIVATE_KEY);
   const val = utils.arrayify(
-    "0xe58673f05884a5d1144090e54b284077263771c07c699fce69f0fa79b1cc60e9"
+    "0x75a98b9f2fa8170a42b52a6730223cfe04610187ba038d815fe832fe97283f1e"
   );
   const sig = await wallet.signMessage(utils.arrayify(val));
   console.log(sig);
+  console.log(utils.verifyMessage(val, sig));
 
   // const user = await User.getByEmail("olayinkaganiyu1@gmail.com");
   // console.log(user);

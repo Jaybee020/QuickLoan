@@ -64,6 +64,7 @@ router.post("/simulate/:id", async function (req: Request, res: Response) {
     }
     res.status(200).json({ data: simulation });
   } catch (error) {
+    console.log(error);
     res.status(400).json({ error });
   }
 });
@@ -85,6 +86,7 @@ router.post("/broadcast/:id", async function (req: Request, res: Response) {
     const broadcast = await UserOperation.broadcastUserOperation(id);
     res.status(200).json({ data: broadcast });
   } catch (error) {
+    console.log(error);
     res.status(400).json({ error });
   }
 });
